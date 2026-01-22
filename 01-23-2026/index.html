@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You ❤️</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Quicksand:wght@400;600&display=swap');
+
+        :root {
+            --primary: #f2c94c;
+            --secondary: #fff9c4;
+            --accent: #fbc02d;
+            --text: #4a4a4a;
+            --paper: #fffff0;
+            --envelope-w: 300px;
+            --envelope-h: 200px;
+            --card-w: 400px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #fffdf0 0%, #f7f1d5 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Quicksand', sans-serif;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, #fff4d1 0%, transparent 40%),
+                radial-gradient(circle at bottom left, #f2c94c 0%, transparent 40%);
+            opacity: 0.6;
+            z-index: -2;
+        }
+
+        .container {
+            position: relative;
+            width: var(--envelope-w);
+            height: var(--envelope-h);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            transform-style: preserve-3d;
+            z-index: 2;
+        }
+
+        .envelope-wrapper.open {
+            transform: translateY(100px);
+            transition: transform 0.8s ease-in-out;
+        }
+
+        .envelope {
+            width: var(--envelope-w);
+            height: var(--envelope-h);
+            background: var(--primary);
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 110px solid #e1b21e;
+            transform-origin: top;
+            transition: transform 0.6s ease, z-index 0.2s;
+            z-index: 4;
+        }
+
+        .envelope-wrapper.open .flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-bottom: 100px solid #f9d976;
+            z-index: 3;
+        }
+
+        .heart-seal {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 5;
+            transition: opacity 0.3s;
+        }
+
+        .card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -20%) scale(0.5);
+            width: var(--card-w);
+            max-width: 90vw;
+            min-height: 400px;
+            background: var(--paper);
+            padding: 30px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 2;
+            box-sizing: border-box;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border: 2px solid #f7e8b0;
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #b38b00;
+            font-size: 26px;
+            margin-bottom: 15px;
+            margin-top: 5px;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .letter-card.open {
+            transform: translate(-50%, -60%) scale(1);
+            opacity: 1;
+            z-index: 10;
+            pointer-events: all;
+        }
+
+        .invite-card {
+            background: #fffdf0;
+        }
+
+        .invite-card.show {
+            transform: translate(-50%, -60%) scale(1);
+            opacity: 1;
+            z-index: 11;
+            pointer-events: all;
+        }
+
+        .letter-card.fade-out {
+            transform: translate(-150%, -60%) rotate(-10deg);
+            opacity: 0;
+        }
+
+        .btn {
+            background: #f1c40f;
+            color: #4a4a4a;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.3);
+            z-index: 10;
+        }
+
+        .btn:hover {
+            background: #d4ac0d;
+            transform: translateY(-2px);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .btn-no {
+            background: #fef5d1;
+            color: #856404;
+        }
+
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .success-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-overlay h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 40px;
+            color: #f39c12;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-overlay"></div>
+
+    <audio id="bg-music" loop>
+        <source src="Rico Blanco - Balisong Transformed 2016.mp3" type="audio/mp3">
+    </audio>
+
+    <div class="container">
+        <div class="envelope-wrapper" id="envelopeWrapper" onclick="openEnvelope()">
+            <div class="envelope">
+                <div class="flap"></div>
+                <div class="pocket"></div>
+                <div class="heart-seal">❤️</div>
+            </div>
+        </div>
+
+        <div class="card letter-card">
+            <h1>Happy Monthsary</h1>
+            <p style="font-size: 13px;">
+                To my favorite person, <br><br>
+                I want you to know that I love you so, so much. I loved you yesterday, I love you today, and I will love
+                you tomorrow and forever.
+
+                I am so grateful that I have you in my life. I am grateful that you exist in this lifetime. I am
+                grateful that I met you and that we get to be together. I hope that in every lifetime or timeline, we
+                always end up together.
+
+                You are the best gift I have ever received. You are my safe space, my home, and my everything.
+
+                I promise to keep choosing you every single day. I promise to love, protect, and care for you, and to do
+                everything for you. I promise to do my best to give you the love that you deserve.
+
+                I promise to keep making you smile, because your smile means everything to me. I love you so much, baby.
+                Let's make more memories together. Happy Monthsary, baby!<br><br>
+                I have a little question for you...
+            </p>
+            <button class="btn" onclick="showInvitation()">Next ➝</button>
+        </div>
+
+        <div class="card invite-card" id="inviteCard">
+            <h1>Be My Valentine?</h1>
+            <p>
+                Dates are fun, chocolates are sweet, but you are the real treat.<br><br>
+                <strong>Will you be my Valentine this year?</strong>
+            </p>
+            <div class="btn-group">
+                <button class="btn" onclick="acceptLove()">YES! 💖</button>
+                <button class="btn btn-no" id="noBtn" onmouseover="moveNo()" onclick="moveNo()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-overlay" id="successScreen">
+        <h2>It's a Date! 🌹</h2>
+        <p>I love you so much!</p>
+    </div>
+
+    <script>
+        let envelopeOpened = false;
+
+        function openEnvelope() {
+            if (envelopeOpened) return;
+            envelopeOpened = true;
+
+            const music = document.getElementById('bg-music');
+            music.volume = 0.5;
+            music.play().catch(e => console.log("Click interaction needed for audio"));
+
+            document.getElementById('envelopeWrapper').classList.add('open');
+            document.querySelector('.heart-seal').style.opacity = '0';
+
+            setTimeout(() => {
+                document.querySelector('.letter-card').classList.add('open');
+            }, 600);
+        }
+
+        function showInvitation() {
+            document.querySelector('.letter-card').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('inviteCard').classList.add('show');
+            }, 200);
+        }
+
+        function moveNo() {
+            const btn = document.getElementById('noBtn');
+            const x = Math.random() * (window.innerWidth - 100);
+            const y = Math.random() * (window.innerHeight - 50);
+            btn.style.position = 'fixed';
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+        }
+
+        function acceptLove() {
+            const screen = document.getElementById('successScreen');
+            screen.classList.add('visible');
+
+            const duration = 3000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
+
+            const interval = setInterval(function () {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                const particleCount = 50 * (timeLeft / duration);
+
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+    </script>
+</body>
+
+</html>
